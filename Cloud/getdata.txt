@@ -1,0 +1,37 @@
+<?php  
+include('connect.php');
+//header("Access-Control-Allow-Origin: *");
+//header("Content-Type: application/json; charset=UTF-8");
+$myObj =  new \stdClass();
+
+
+$json = file_get_contents('php://input');
+$obj = json_decode($json);
+
+    $query="SELECT  * FROM dailyrecords order by id desc";
+    $result = mysqli_query($cn,$query);
+    
+    if($result && mysqli_num_rows($result) > 0)
+    {
+         $row = mysqli_fetch_array($result);
+         $myObj->id=$row['id'];
+         $myObj->dd=$row['dd'];
+         $myObj->mm=$row['mm'];
+         $myObj->yy=$row['yy'];
+         $myObj->soilvalue=$row['soilvalue'];
+         $myObj->tempvalue=$row['tempvalue'];
+         $myObj-> humidityvalue=$row['humidityvalue'];
+         $myObj->rainvalue=$row['rainvalue'];
+           
+        $myObj->Message ="Success"; 
+        
+    }
+    else 
+    {
+        $myObj->Message = "Fail"; 
+    }
+
+
+$myJSON = json_encode($myObj);
+echo $myJSON;
+?>

@@ -1,0 +1,177 @@
+
+/**
+  Config Steps:
+  - Connect Arduino to Arduino IDE
+  - Select NodeMCU 1.0 board, then select port
+  - Compile and run the code
+
+  To watch serial port:
+  - Click on serial monitor in Arduino IDE
+  - Choose 115200 as port number
+*/
+
+
+// include library
+// already included with folder I provided, may need to add it in Arduino IDE
+// Steps: Sketch > Include Library Add .ZIP library
+#include <dht11.h> 
+#include <ESP8266WiFi.h> // already included with ESP library
+#include <ESP8266HTTPClient.h> // already included with ESP library
+
+dht11 DHT11; // create DHT11 object
+
+// define server IP, this is the server where we will send data.
+#define SERVER_IP "https://smartirregation.000webhostapp.com/addrecord.php"
+
+#ifndef STASSID // if SSID is not defined then define it here
+#define STASSID "wifi name" // replace this with your wifi name (case sensitive)
+#define STAPSK "password" // replace this with your wifi password (case sensitive)
+#endif // end of if SSID is not defined
+
+// define relay output ports
+#define RELAY1 D7 // relay 1 output port on D7
+#define RELAY2 D8  // relay 2 output port on D8
+
+#define MOISTURE_SENSOR A0 // moisture sensor input port on A0 as analog
+#define RAIN_SENSOR D6 // rain sensor input port on D6 as digital
+
+#define DHT11PIN D4 // DHT11 pin on D4
+
+/**
+  setup function will run once when the device boots up
+  this function will setup all the required configurations
+*/
+void setup() {
+
+  // begin serial communication, this is used to print data to serial monitor
+  Serial.begin(115200);
+
+  // Wifi configuration. This will connect to wifi network, replace SSID and PASSWORD with your wifi name and password
+  WiFi.begin(STASSID, STAPSK);
+
+  // wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500); // wait for 500ms
+    Serial.print("."); // print . to serial monitor
+  }
+  Serial.println(""); // print new line to serial monitor
+  Serial.print("Connected! IP address: ");  // print to serial monitor that we are connected to wifi
+  Serial.println(WiFi.localIP()); // print IP address to serial monitor
+
+  // set pin configuration
+  pinMode(RELAY1, OUTPUT);  // set relay 1 pin as output
+  pinMode(RELAY2, OUTPUT);  // set relay 2 pin as output
+  pinMode(MOISTURE_SENSOR, INPUT);  // set moisture sensor pin as input
+  pinMode(RAIN_SENSOR, INPUT);  // set rain sensor pin as input
+
+  // set initial output state
+  digitalWrite(RELAY1, HIGH); // turn off relay 1
+  digitalWrite(RELAY2, HIGH); // turn off relay 2
+}
+
+void SendData(String url, String data, String log) {
+  // wait for WiFi connection 
+  if ((WiFi.status() == WL_CONNECTED)) {
+
+    // create HTTP client, this will send data to server using HTTP protocol
+    WiFiClient client;
+    HTTPClient http;
+
+    Serial.print("[HTTP] begin...\n"); // print to serial monitor that we are starting HTTP request to server 
+    // configure traged server and url
+    http.begin(client, url);  // HTTP server and endpoint to send data.
+    http.addHeader("Content-Type", "application/json"); // set content type to JSON so that server can understand data format
+
+    Serial.print("[HTTP] POST...\n"); // print to serial monitor that we are sending POST request to server
+
+
+    // start connection and send HTTP header and body
+    // httpCode is the response code from server, if it is 200 then it means request was successful
+    int httpCode = http.POST(data);
+
+    //  check if request was successful or not. if successful then print response code to serial monitor and print response body
+    if (httpCode > 0) {
+      // HTTP header has been send and Server response header has been handled
+      Serial.print(log);
+      Serial.printf(": [HTTP] POST... code: %d\n", httpCode);
+
+      // file found at server
+      if (httpCode == HTTP_CODE_OK) {
+
+        // get server response body
+        const String& payload = http.getString();
+        Serial.println("received payload:\n<<"); // print to serial monitor that we are receiving data from server
+        Serial.println(payload); // print data received from server
+        Serial.println(">>"); // print to serial monitor that we have received data from server
+      }
+    } else {
+      // if post request failed then serial output error
+      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str()); // print error to serial monitor
+    }
+
+    // close connection, this will free resources in ESP8266
+    http.end();
+  }
+}
+
+// loop function will run indefinitely 
+void loop() {
+
+  // read rain sensor value from D6 pin
+  int is_raining = digitalRead(RAIN_SENSOR);  
+
+  // if rain sensor is HIGH then it is raining else it is not raining. 
+  float moisture_percentage; 
+
+  // calculate moisture percentage from moisture sensor value, this is a simple formula to calculate moisture percentage
+  // 1023 is the maximum value of moisture sensor and 0 is the minimum value of moisture sensor
+  moisture_percentage = (100.00 - ((analogRead(MOISTURE_SENSOR) / 1023.00) * 100.00)); 
+
+  // print moisture percentage to serial monitor
+  Serial.print("Soil Moisture(in Percentage) = ");
+  Serial.print(moisture_percentage);  // Prints the moisture percentage
+  Serial.println("%"); // Prints the humidity percentage sign
+
+  // DHT11 library reads analogue values from A0 pin input, this will read temperature and humidity values
+  int chk = DHT11.read(DHT11PIN);
+
+  // print temperature and humidity values to serial monitor
+  Serial.print("Humidity (%): ");
+  Serial.println((float)DHT11.humidity, 2);  // Prints the humidity value
+
+  // Prints the temperature value in Celsius
+  Serial.print("Temperature  (C): ");
+  Serial.println((float)DHT11.temperature, 2);  // Prints the temperature value, 2 is the number of decimal places to print
+
+  Serial.print("Rain:");
+  Serial.println(String(is_raining));
+
+  // if moisture percent level is below 1.0 then turn on relay
+  if (moisture_percentage <= 1.0 /* change this value to calculated moisture level */) {
+    // if state is true then turn on relay
+    digitalWrite(RELAY1, LOW);
+    digitalWrite(RELAY2, LOW);
+    SendData("http://smartirregation.000webhostapp.com/waterpumpstatus.php", "{\"Status\":\"On\"}", "Relay data");
+  } else {
+    // else turn off relay
+    digitalWrite(RELAY1, HIGH);
+    digitalWrite(RELAY2, HIGH);
+    SendData("http://smartirregation.000webhostapp.com/waterpumpstatus.php", "{\"Status\":\"Off\"}", "Relay data");
+  }
+
+  SendData("http://smartirregation.000webhostapp.com/addrecord.php", "{\"SoilValue\":" // soil value in percentage
+      + String(moisture_percentage) 
+      + ",\"TempValue\":" // temperature value in celsius
+      + String((float)DHT11.temperature) 
+      + ",\"HumidityValue\":" // humidity value in percentage
+      + String((float)DHT11.humidity) 
+      + ",\"RainValue\":" // rain value, 1 if raining else 0. if raining then turn off relay
+      + String(is_raining) 
+      + "}", "Sensor Data");
+
+  
+
+  // run this loop every 1 minute
+  // 60000 ms = 1 minute
+  delay(60000 /* changing this value will change interation */);
+}

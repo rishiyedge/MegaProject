@@ -1,0 +1,50 @@
+<?php  
+include('connect.php');
+//header("Access-Control-Allow-Origin: *");
+//header("Content-Type: application/json; charset=UTF-8");
+$myObj =  new \stdClass();
+
+$srno=1;
+$query="SELECT MAX(id) FROM dailyrecords";
+    $result = mysqli_query($cn,$query);
+    /*if($row1 = mysqli_fetch_array($result,MYSQLI_BOTH))*/
+    if($result)
+    {
+        $row1 = mysqli_fetch_array($result,MYSQLI_BOTH);
+        $srno = $row1[0]+1;
+    }
+    $srno1=1;
+
+$dt = date('Y-m-d H:i:s');
+$dd=date("d");
+$mm=date("m");
+$yy=date("Y");
+
+$json = file_get_contents('php://input');
+$obj = json_decode($json);
+if(isset($obj->{'SoilValue'}) && isset($obj->{'TempValue'})&& isset($obj->{'HumidityValue'})&& isset($obj->{'RainValue'}))
+{
+        
+        $qry="INSERT INTO dailyrecords (id,dd,mm,yy,soilvalue, tempvalue, humidityvalue,rainvalue) VALUES (".$srno.",".$dd.",".$mm.",".$yy.",".$obj->{'SoilValue'}.",".$obj->{'TempValue'}.",".$obj->{'HumidityValue'}.",".$obj->{'RainValue'}.")";
+        //echo $qry;
+            $result =mysqli_query($cn,$qry);
+            if($result)
+            {
+                
+                $myObj->Message ="Success"; 
+            }
+            else
+            {
+                $myObj->Message = "Fail"; 
+            }
+            
+    
+}
+else
+{
+    $myObj->Message = "Fail";
+}
+
+$myJSON = json_encode($myObj);
+echo $myJSON;
+?>

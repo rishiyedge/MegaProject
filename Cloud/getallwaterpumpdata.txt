@@ -1,0 +1,58 @@
+<?php  
+include('connect.php');
+//header("Access-Control-Allow-Origin: *");
+//header("Content-Type: application/json; charset=UTF-8");
+$myObj =  new \stdClass();
+
+
+$json = file_get_contents('php://input');
+$obj = json_decode($json);
+
+    $query="SELECT  * FROM waterpumpdailyrecords order by id desc";
+    $result = mysqli_query($cn,$query);
+    $i=0;
+    if($result && mysqli_num_rows($result) > 0)
+    {
+        $myObj->Message = "Success"; 
+        $myObj->WaterPumpDataList =[];
+        $obj=  new \stdClass();
+        while($row = mysqli_fetch_assoc($result))
+        {
+         
+         
+         if($i%2==0)
+         {
+            $obj->dd=$row['dd'];
+            $obj->mm=$row['mm'];
+            $obj->yy=$row['yy'];
+            $obj->hh=$row['hh'];
+            $obj->mi=$row['mi'];
+            $obj-> status=$row['status'];
+         }
+         if($i%2==1)
+         {
+            $obj->dd1=$row['dd'];
+            $obj->mm1=$row['mm'];
+            $obj->yy1=$row['yy'];
+            $obj->hh1=$row['hh'];
+            $obj->mi1=$row['mi'];
+            $obj-> status1=$row['status'];
+             array_push($myObj->WaterPumpDataList, $obj);
+             $obj=  new \stdClass();
+         }
+            $i=$i+1;
+           
+        }
+           
+       
+        
+    }
+    else 
+    {
+        $myObj->Message = "Fail"; 
+    }
+
+
+$myJSON = json_encode($myObj);
+echo $myJSON;
+?>

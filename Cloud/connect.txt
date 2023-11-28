@@ -1,0 +1,8 @@
+<?php
+
+$cn =  mysqli_connect('localhost', 'id20665079_smart_irregation', 'Fi]>yydRI2Lv|-g_');
+			
+$db=mysqli_select_db($cn,'id20665079_smart_irregation_db');
+
+			?>
+

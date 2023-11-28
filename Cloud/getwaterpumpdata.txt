@@ -1,0 +1,53 @@
+<?php  
+include('connect.php');
+//header("Access-Control-Allow-Origin: *");
+//header("Content-Type: application/json; charset=UTF-8");
+$myObj =  new \stdClass();
+
+
+$json = file_get_contents('php://input');
+$obj = json_decode($json);
+
+    $query="SELECT  * FROM waterpumpdailyrecords order by id desc";
+    $result = mysqli_query($cn,$query);
+    $i=0;
+    if($result && mysqli_num_rows($result) > 0)
+    {
+        while($row = mysqli_fetch_assoc($result))
+        {
+         
+         if($i==0)
+         {
+            $myObj->dd=$row['dd'];
+            $myObj->mm=$row['mm'];
+            $myObj->yy=$row['yy'];
+            $myObj->hh=$row['hh'];
+            $myObj->mi=$row['mi'];
+            $myObj-> status=$row['status'];
+         }
+         if($i==1)
+         {
+            $myObj->dd1=$row['dd'];
+            $myObj->mm1=$row['mm'];
+            $myObj->yy1=$row['yy'];
+            $myObj->hh1=$row['hh'];
+            $myObj->mi1=$row['mi'];
+            $myObj-> status1=$row['status'];
+         }
+            $i=$i+1;
+            if($i==2)
+                break;
+        }
+           
+        $myObj->Message ="Success"; 
+        
+    }
+    else 
+    {
+        $myObj->Message = "Fail"; 
+    }
+
+
+$myJSON = json_encode($myObj);
+echo $myJSON;
+?>

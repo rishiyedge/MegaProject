@@ -1,0 +1,58 @@
+<?php  
+include('connect.php');
+//header("Access-Control-Allow-Origin: *");
+//header("Content-Type: application/json; charset=UTF-8");
+$myObj =  new \stdClass();
+
+$srno=1;
+$query="SELECT MAX(id) FROM waterpumpdailyrecords";
+    $result = mysqli_query($cn,$query);
+    /*if($row1 = mysqli_fetch_array($result,MYSQLI_BOTH))*/
+    if($result)
+    {
+        $row1 = mysqli_fetch_array($result,MYSQLI_BOTH);
+        $srno = $row1[0]+1;
+    }
+    $srno1=1;
+    
+$json = file_get_contents('php://input');
+$obj = json_decode($json);
+if(isset($obj->{'Status'}))
+{
+    
+    
+    
+    $dt = date('Y-m-d H:i:s');
+    $dd=date("d");
+    $mm=date("m");
+    $yy=date("Y");
+ 
+    date_default_timezone_set("Asia/Calcutta");
+    $dt1 =date("h:i:sa");
+    $hh=date("h");
+    $mi=date("i");
+    
+    $qry="INSERT INTO waterpumpdailyrecords (id,dd,mm,yy,hh,mi,status) VALUES (".$srno.",".$dd.",".$mm.",".$yy.",".$hh.",".$mi.",'".$obj->{'Status'}."')";
+        
+    $result =mysqli_query($cn,$qry);
+    if($result)
+    {
+        
+        $myObj->Message ="Success"; 
+        
+        $myObj->Status =$obj->{'Status'}; 
+    }
+    else
+    {
+        $myObj->Message = "Fail"; 
+    }
+    
+}
+else
+{
+    $myObj->Message = "Fail";
+}
+
+$myJSON = json_encode($myObj);
+echo $myJSON;
+?>

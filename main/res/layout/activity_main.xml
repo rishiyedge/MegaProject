@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".MainActivity">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="27dp"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/txtlbl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Sensor"
+                android:textColor="@color/colorAccent"
+                android:textSize="30dp" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+
+            android:weightSum="1">
+
+            <com.github.anastr.speedviewlib.SpeedView
+                android:id="@+id/speed111"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:layout_weight="1"
+                app:sv_backgroundCircleColor="@color/black"
+                app:sv_centerCircleColor="@color/black"
+                app:sv_indicator="SpindleIndicator"
+                app:sv_indicatorColor="@color/red"
+                app:sv_indicatorWidth="6dp"
+                app:sv_markColor="@android:color/transparent"
+                app:sv_maxSpeed="1000"
+                app:sv_minSpeed="0"
+                app:sv_speedTextColor="@color/red"
+                app:sv_speedTextFormat="INTEGER"
+                app:sv_speedTextSize="8dp"
+                app:sv_speedometerWidth="8dp"
+                app:sv_textSize="10dp"
+                app:sv_tickNumber="9"
+                app:sv_tickPadding="8dp"
+                app:sv_tickRotation="true"
+                app:sv_unit=""
+                app:sv_withTremble="false" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtvalue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:padding="15dp"
+                android:text="Value"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textColorHighlight="@color/red"
+                android:textSize="20sp"
+                app:cornerRadius="20dp" />
+
+            <TextView
+                android:id="@+id/txtprevvalue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:onClick="showlist"
+                android:padding="15dp"
+                android:text="Previous Value"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textColorHighlight="@color/red"
+                android:textSize="20sp"
+                app:cornerRadius="20dp" />
+
+            <TextView
+                android:id="@+id/txtpredvalue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:padding="15dp"
+                android:text="Predicted Value"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textColorHighlight="@color/red"
+                android:textSize="20sp"
+                app:cornerRadius="20dp" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+</RelativeLayout>
